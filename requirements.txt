@@ -1,0 +1,9 @@
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+PyPDF2
+openpyxl
+anthropic
+pycryptodome
+python-dotenv
+pandas
