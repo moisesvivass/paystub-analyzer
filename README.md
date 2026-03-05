@@ -92,6 +92,6 @@ See `demo/sample_report.xlsx` for an example of the generated report with anonym
 - [ ] Web dashboard — view analytics in browser
 - [ ] Support for multiple employees
 
-## 👤 Author
+## 👤 Moises Vivas 
 
 Built as a data analytics portfolio project.
