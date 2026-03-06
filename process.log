@@ -253,3 +253,55 @@
 2026-03-06 15:37:22,599 — INFO — Found 100 emails
 2026-03-06 15:37:22,601 — INFO — 📬 0 new emails out of 5 total
 2026-03-06 15:37:22,602 — INFO — ✅ No new emails to process!
+2026-03-06 17:08:49,000 — INFO — 🚀 Starting Paystub Analyzer — mode=full limit=3
+2026-03-06 17:08:49,001 — INFO — Connecting to Gmail...
+2026-03-06 17:08:49,786 — INFO — file_cache is only supported with oauth2client<4.0.0
+2026-03-06 17:08:49,789 — INFO — Searching Gmail for paystub emails...
+2026-03-06 17:08:50,626 — INFO — Found 100 emails
+2026-03-06 17:08:50,627 — INFO — Processing 1/3...
+2026-03-06 17:08:50,838 — INFO — [19b9c8e1d127948e] PDF found in multipart tree (85,939 bytes)
+2026-03-06 17:08:50,902 — INFO — PDF text extracted — 1195 characters
+2026-03-06 17:08:53,432 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-06 17:08:53,483 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-25
+2026-03-06 17:08:53,484 — INFO — Processing 2/3...
+2026-03-06 17:08:53,690 — INFO — [19b7378d76b681e0] PDF found in multipart tree (90,848 bytes)
+2026-03-06 17:08:53,738 — INFO — PDF text extracted — 1384 characters
+2026-03-06 17:08:56,299 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-06 17:08:56,301 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-18
+2026-03-06 17:08:56,302 — INFO — Processing 3/3...
+2026-03-06 17:08:56,503 — INFO — [19b4fa77ea2540e5] PDF found in multipart tree (91,270 bytes)
+2026-03-06 17:08:56,684 — INFO — PDF text extracted — 1390 characters
+2026-03-06 17:08:58,937 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-06 17:08:58,940 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-11
+2026-03-06 17:08:58,944 — INFO — 💾 Saved 5 processed IDs to processed_ids.json
+2026-03-06 17:08:58,944 — INFO — Generating Excel report...
+2026-03-06 17:08:59,011 — INFO — 📂 Loaded 2 existing records from Excel
+2026-03-06 17:08:59,012 — INFO — ✅ 3 new records added — 5 total
+2026-03-06 17:08:59,060 — INFO — 💾 Excel saved at: C:\Users\moise\OneDrive\Escritorio\Ares Paystub\paystubs_2025.xlsx
+2026-03-06 17:08:59,060 — INFO — ✅ Done!
+2026-03-06 17:09:33,293 — INFO — 🚀 Starting Paystub Analyzer — mode=full limit=3
+2026-03-06 17:09:33,294 — INFO — Connecting to Gmail...
+2026-03-06 17:09:33,301 — INFO — file_cache is only supported with oauth2client<4.0.0
+2026-03-06 17:09:33,304 — INFO — Searching Gmail for paystub emails...
+2026-03-06 17:09:34,090 — INFO — Found 100 emails
+2026-03-06 17:09:34,092 — INFO — Processing 1/3...
+2026-03-06 17:09:34,344 — INFO — [19b9c8e1d127948e] PDF found in multipart tree (85,939 bytes)
+2026-03-06 17:09:34,449 — INFO — PDF text extracted — 1195 characters
+2026-03-06 17:09:36,738 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-06 17:09:36,798 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-25
+2026-03-06 17:09:36,799 — INFO — Processing 2/3...
+2026-03-06 17:09:36,967 — INFO — [19b7378d76b681e0] PDF found in multipart tree (90,848 bytes)
+2026-03-06 17:09:37,042 — INFO — PDF text extracted — 1384 characters
+2026-03-06 17:09:39,200 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-06 17:09:39,203 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-18
+2026-03-06 17:09:39,204 — INFO — Processing 3/3...
+2026-03-06 17:09:39,407 — INFO — [19b4fa77ea2540e5] PDF found in multipart tree (91,270 bytes)
+2026-03-06 17:09:39,548 — INFO — PDF text extracted — 1390 characters
+2026-03-06 17:09:41,789 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-06 17:09:41,792 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-11
+2026-03-06 17:09:41,795 — INFO — 💾 Saved 5 processed IDs to processed_ids.json
+2026-03-06 17:09:41,820 — INFO — Generating Excel report...
+2026-03-06 17:09:41,834 — INFO — 📂 Loaded 5 existing records from Excel
+2026-03-06 17:09:41,835 — INFO — ✅ 0 new records added — 5 total
+2026-03-06 17:09:41,870 — INFO — 💾 Excel saved at: C:\Users\moise\OneDrive\Escritorio\Ares Paystub\paystubs_2025.xlsx
+2026-03-06 17:09:41,875 — INFO — ✅ Done!
