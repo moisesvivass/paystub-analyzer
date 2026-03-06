@@ -1,6 +1,8 @@
 import os
 import base64
 import json
+import logging
+from dotenv import load_dotenv
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -9,9 +11,19 @@ import PyPDF2
 import openpyxl
 from anthropic import Anthropic
 
-# CONFIGURATION - Change these values
-from dotenv import load_dotenv
 load_dotenv()
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s — %(levelname)s — %(message)s',
+    handlers=[
+        logging.FileHandler('process.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+anthropic_client = Anthropic()
 
 CREDENTIALS_FILE = os.getenv("CREDENTIALS_FILE")
 PDF_PASSWORD = os.getenv("PDF_PASSWORD")
@@ -42,10 +54,9 @@ def get_paystub_emails(service):
 
 def download_pdf(service, message_id):
     message = service.users().messages().get(userId='me', id=message_id, format='full').execute()
-    
+
     def find_pdf_in_parts(parts):
         for part in parts:
-            print(f"  Part: {part.get('filename')} | mimeType: {part.get('mimeType')}")
             if part.get('mimeType') == 'application/pdf' or part.get('filename', '').endswith('.pdf'):
                 data = part['body'].get('data')
                 att_id = part['body'].get('attachmentId')
@@ -61,7 +72,7 @@ def download_pdf(service, message_id):
                 if result:
                     return result
         return None
-    
+
     parts = message['payload'].get('parts', [])
     return find_pdf_in_parts(parts)
 
@@ -76,8 +87,7 @@ def extract_text_from_pdf(pdf_bytes, password):
     return text
 
 def extract_data_with_claude(text):
-    client = Anthropic()
-    response = client.messages.create(
+    response = anthropic_client.messages.create(
         model="claude-sonnet-4-20250514",
         max_tokens=1000,
         messages=[{
@@ -109,12 +119,12 @@ def create_excel(data_list):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Paystubs 2025"
-    
+
     headers = ["Company", "Pay Period Start", "Pay Period End", "Gross Pay",
                "Net Pay", "Federal Tax", "Provincial Tax",
                "CPP", "EI", "Vacation Pay", "Hours Worked"]
     ws.append(headers)
-    
+
     for data in sorted(data_list, key=lambda x: x.get('pay_period_start', '')):
         ws.append([
             data.get('company'),
@@ -129,34 +139,36 @@ def create_excel(data_list):
             data.get('vacation_pay'),
             data.get('hours_worked')
         ])
-    
+
     wb.save(OUTPUT_EXCEL)
-    print(f"Excel saved at: {OUTPUT_EXCEL}")
+    logger.info(f"Excel saved at: {OUTPUT_EXCEL}")
 
 def main():
-    print("Connecting to Gmail...")
+    logger.info("Connecting to Gmail...")
     service = authenticate_gmail()
-    
-    print("Searching for paystubs...")
+
+    logger.info("Searching for paystubs...")
     messages = get_paystub_emails(service)
-    print(f"Found {len(messages)} emails")
-    
+    logger.info(f"Found {len(messages)} emails")
+
     all_data = []
     for i, msg in enumerate(messages):
-        print(f"Processing {i+1}/{len(messages)}...")
+        logger.info(f"Processing {i+1}/{len(messages)}...")
         pdf_bytes = download_pdf(service, msg['id'])
         if pdf_bytes:
-            text = extract_text_from_pdf(pdf_bytes, PDF_PASSWORD)
-            print(f"Text extracted: {text[:200]}")  # ← debug
-            data = extract_data_with_claude(text)
-            all_data.append(data)
-            print(f"  ✅ {data.get('pay_period_start')} — Gross: ${data.get('gross_pay')}")
+            try:
+                text = extract_text_from_pdf(pdf_bytes, PDF_PASSWORD)
+                data = extract_data_with_claude(text)
+                all_data.append(data)
+                logger.info(f"✅ {data.get('pay_period_start')} — Gross: ${data.get('gross_pay')}")
+            except Exception as e:
+                logger.error(f"❌ Error processing paystub {i+1}: {e}")
         else:
-            print(f"  ❌ No PDF found in this email")
-    
-    print("Generating Excel...")
+            logger.warning(f"❌ No PDF found in email {i+1}")
+
+    logger.info("Generating Excel...")
     create_excel(all_data)
-    print("Done! 🎉")
+    logger.info("Done! 🎉")
 
 if __name__ == "__main__":
     main()
