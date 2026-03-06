@@ -305,3 +305,29 @@
 2026-03-06 17:09:41,835 — INFO — ✅ 0 new records added — 5 total
 2026-03-06 17:09:41,870 — INFO — 💾 Excel saved at: C:\Users\moise\OneDrive\Escritorio\Ares Paystub\paystubs_2025.xlsx
 2026-03-06 17:09:41,875 — INFO — ✅ Done!
+2026-03-06 17:26:26,326 — INFO — 🚀 Starting Paystub Analyzer — mode=full limit=3
+2026-03-06 17:26:26,327 — INFO — Connecting to Gmail...
+2026-03-06 17:26:26,335 — INFO — file_cache is only supported with oauth2client<4.0.0
+2026-03-06 17:26:26,338 — INFO — Searching Gmail for paystub emails...
+2026-03-06 17:26:27,100 — INFO — Found 100 emails
+2026-03-06 17:26:27,101 — INFO — Processing 1/3...
+2026-03-06 17:26:27,282 — INFO — [19b9c8e1d127948e] PDF found in multipart tree (85,939 bytes)
+2026-03-06 17:26:27,350 — INFO — PDF text extracted — 1195 characters
+2026-03-06 17:26:29,594 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-06 17:26:29,639 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-25
+2026-03-06 17:26:29,640 — INFO — Processing 2/3...
+2026-03-06 17:26:29,814 — INFO — [19b7378d76b681e0] PDF found in multipart tree (90,848 bytes)
+2026-03-06 17:26:29,849 — INFO — PDF text extracted — 1384 characters
+2026-03-06 17:26:32,185 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-06 17:26:32,188 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-18
+2026-03-06 17:26:32,190 — INFO — Processing 3/3...
+2026-03-06 17:26:32,406 — INFO — [19b4fa77ea2540e5] PDF found in multipart tree (91,270 bytes)
+2026-03-06 17:26:32,593 — INFO — PDF text extracted — 1390 characters
+2026-03-06 17:26:34,762 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-06 17:26:34,765 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-11
+2026-03-06 17:26:34,767 — INFO — 💾 Saved 5 processed IDs to processed_ids.json
+2026-03-06 17:26:34,768 — INFO — Generating Excel report...
+2026-03-06 17:26:34,793 — INFO — 📂 Loaded 5 existing records (legacy format)
+2026-03-06 17:26:34,794 — INFO — ✅ 0 new records added — 5 total
+2026-03-06 17:26:35,079 — INFO — 💾 Excel saved at: C:\Users\moise\OneDrive\Escritorio\Ares Paystub\paystubs_2025.xlsx
+2026-03-06 17:26:35,079 — INFO — ✅ Done!
