@@ -32,7 +32,7 @@ def get_paystub_emails(service):
     ).execute()
     messages = results.get('messages', [])
     logger.info(f"Found {len(messages)} emails")
-    return messages[:5]
+    return messages
 
 
 def download_pdf(service, message_id):
