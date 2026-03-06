@@ -1,6 +1,10 @@
 import json
+import os
+from dotenv import load_dotenv
 from anthropic import Anthropic
 from paystub_analyzer.logger import get_logger
+
+load_dotenv()
 
 logger = get_logger(__name__)
 
