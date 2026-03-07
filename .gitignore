@@ -5,6 +5,7 @@ client_secret*.json
 
 # Excel files with real data
 *.xlsx
+!demo/paystubs_DEMO.xlsx
 
 # PDF files
 *.pdf
