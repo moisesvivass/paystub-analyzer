@@ -386,3 +386,26 @@
 2026-03-06 17:58:36,935 — INFO — ✅ 0 new records added — 5 total
 2026-03-06 17:58:37,143 — INFO — 💾 Excel saved at: C:\Users\moise\OneDrive\Escritorio\Ares Paystub\paystubs_2025.xlsx
 2026-03-06 17:58:37,144 — INFO — ✅ Done!
+2026-03-07 15:09:17,112 — INFO — 🚀 Starting Paystub Analyzer — mode=full limit=2
+2026-03-07 15:09:17,113 — INFO — Connecting to Gmail...
+2026-03-07 15:09:17,633 — INFO — file_cache is only supported with oauth2client<4.0.0
+2026-03-07 15:09:17,649 — INFO — Searching Gmail for paystub emails...
+2026-03-07 15:09:18,260 — INFO — Found 100 emails
+2026-03-07 15:09:18,268 — INFO — Processing 1/2...
+2026-03-07 15:09:18,518 — INFO — [19b9c8e1d127948e] PDF found in multipart tree (85,939 bytes)
+2026-03-07 15:09:18,603 — INFO — PDF text extracted — 1195 characters
+2026-03-07 15:09:21,055 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-07 15:09:21,076 — WARNING — ⚠️ Math check failed for Ares Infrastructure Incorporated 2025-12-31 — Expected net: $1067.11 | Actual net: $897.78 | Difference: $169.33
+2026-03-07 15:09:21,077 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-25
+2026-03-07 15:09:21,077 — INFO — Processing 2/2...
+2026-03-07 15:09:21,411 — INFO — [19b7378d76b681e0] PDF found in multipart tree (90,848 bytes)
+2026-03-07 15:09:21,469 — INFO — PDF text extracted — 1384 characters
+2026-03-07 15:09:24,478 — INFO — HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-03-07 15:09:24,480 — WARNING — ⚠️ Math check failed for Ares Infrastructure Incorporated 2025-12-24 — Expected net: $189.61 | Actual net: $1404.49 | Difference: $1214.88
+2026-03-07 15:09:24,480 — INFO — ✅ Data extracted — Ares Infrastructure Incorporated — 2025-12-18
+2026-03-07 15:09:24,482 — INFO — 💾 Saved 5 processed IDs to processed_ids.json
+2026-03-07 15:09:24,482 — INFO — Generating Excel report...
+2026-03-07 15:09:24,497 — INFO — 📂 Loaded 5 existing records
+2026-03-07 15:09:24,498 — INFO — ✅ 0 new records added — 5 total
+2026-03-07 15:09:24,637 — INFO — 💾 Excel saved at: C:\Users\moise\OneDrive\Escritorio\Ares Paystub\paystubs_2025.xlsx
+2026-03-07 15:09:24,638 — INFO — ✅ Done!

@@ -1,10 +1,7 @@
 import json
-import os
-from dotenv import load_dotenv
 from anthropic import Anthropic
+from paystub_analyzer.models import PaystubData
 from paystub_analyzer.logger import get_logger
-
-load_dotenv()
 
 logger = get_logger(__name__)
 
@@ -29,18 +26,24 @@ def extract_data_with_claude(text: str) -> dict:
                 - vacation_pay (number)
                 - hours_worked (number)
                 - company (text, extract the company name from the paystub)
-                
+
                 Paystub text:
                 {text}
-                
+
                 Return ONLY valid JSON, no explanation."""
             }]
         )
         raw = response.content[0].text
         clean = raw.replace("```json", "").replace("```", "").strip()
         data = json.loads(clean)
-        logger.info(f"✅ Data extracted — {data.get('company')} — {data.get('pay_period_start')}")
-        return data
+
+        # ── Pydantic validation ────────────────────────────────────────────────
+        paystub = PaystubData(**data)
+        paystub.validate_math()
+
+        logger.info(f"✅ Data extracted — {paystub.company} — {paystub.pay_period_start}")
+        return paystub.model_dump()
+
     except Exception as e:
         logger.error(f"❌ Claude extraction failed: {e}")
         raise
