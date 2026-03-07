@@ -17,3 +17,6 @@ __pycache__/
 
 # VS Code
 .vscode/
+
+# Processed Ids
+processed_ids.json
