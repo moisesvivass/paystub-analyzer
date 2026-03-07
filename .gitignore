@@ -20,3 +20,6 @@ __pycache__/
 
 # Processed Ids
 processed_ids.json
+
+#SqLite database
+paystubs.db

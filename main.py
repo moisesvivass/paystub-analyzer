@@ -4,6 +4,7 @@ from paystub_analyzer.pdf_processor import extract_text_from_pdf
 from paystub_analyzer.claude_extractor import extract_data_with_claude
 from paystub_analyzer.excel_report import create_excel
 from paystub_analyzer.tracker import load_processed_ids, save_processed_ids, filter_new_messages
+from paystub_analyzer.database import init_db, insert_paystub
 from paystub_analyzer.logger import get_logger
 
 logger = get_logger(__name__)
@@ -27,6 +28,9 @@ def main():
 
     logger.info(f"🚀 Starting Paystub Analyzer — mode={args.mode} limit={args.limit}")
 
+    # ── Initialize database ────────────────────────────────────────────────────
+    init_db()
+
     # ── Gmail ──────────────────────────────────────────────────────────────────
     logger.info("Connecting to Gmail...")
     service = authenticate_gmail()
@@ -37,7 +41,7 @@ def main():
 
     if args.mode == "update":
         messages = filter_new_messages(messages, processed_ids)
-    
+
     messages = messages[:args.limit]
 
     if not messages:
@@ -54,7 +58,8 @@ def main():
                 text = extract_text_from_pdf(pdf_bytes)
                 data = extract_data_with_claude(text)
                 all_data.append(data)
-                processed_ids.add(msg['id'])  # ← marca como procesado
+                insert_paystub(data)                    # ← save to SQLite
+                processed_ids.add(msg['id'])
             except Exception as e:
                 logger.error(f"❌ Skipping paystub {i+1}: {e}")
         else:
