@@ -23,3 +23,6 @@ processed_ids.json
 
 #SqLite database
 paystubs.db
+
+#Logs
+process.log
