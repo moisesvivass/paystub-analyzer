@@ -7,3 +7,5 @@ anthropic
 pycryptodome
 python-dotenv
 pandas
+pytest
+pydantic
