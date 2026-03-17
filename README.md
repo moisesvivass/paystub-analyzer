@@ -199,5 +199,8 @@ paystub-analyzer/
 - ⬜ Web dashboard — view analytics in browser
 - ⬜ Scheduled automation — run automatically every month
 
-**Moises Vivas** — Built as a personal finance + data engineering portfolio project.
-GitHub: [github.com/moisesvivass](https://github.com/moisesvivass)
+## 👨‍💻 Author
+
+**Moises Vivas** — CS graduate building backend systems in Python · Toronto, Canada
+
+- GitHub: [github.com/moisesvivass](https://github.com/moisesvivass)
