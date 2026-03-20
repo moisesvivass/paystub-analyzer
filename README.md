@@ -2,6 +2,10 @@
 
 ![CI](https://github.com/moisesvivass/paystub-analyzer/actions/workflows/ci.yml/badge.svg)
 
+> **The problem:** Workers with multiple employers lose track of total earnings, deductions, and tax contributions across pay periods. Manually compiling paystubs into spreadsheets is time-consuming and error-prone.
+>
+> **What this solves:** An automated pipeline that answers: *How much did I earn this year? Are my deductions correct? How do my earnings compare across employers?*
+
 Automated ETL pipeline that connects to Gmail, downloads encrypted PDF paystubs, extracts structured payroll data using Claude AI, stores it in a SQLite database, and generates a professional 7-sheet Excel report.
 
 ## 📸 Screenshots
