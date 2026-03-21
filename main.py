@@ -1,4 +1,6 @@
 import argparse
+import logging
+import sys
 from paystub_analyzer.gmail_client import authenticate_gmail, get_paystub_emails, download_pdf
 from paystub_analyzer.pdf_processor import extract_text_from_pdf
 from paystub_analyzer.claude_extractor import extract_data_with_claude
@@ -6,6 +8,15 @@ from paystub_analyzer.excel_report import create_excel
 from paystub_analyzer.tracker import load_processed_ids, save_processed_ids, filter_new_messages
 from paystub_analyzer.database import init_db, insert_paystub
 from paystub_analyzer.logger import get_logger
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s — %(levelname)s — %(message)s',
+    handlers=[
+        logging.FileHandler('process.log', encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 logger = get_logger(__name__)
 
@@ -61,7 +72,7 @@ def main():
                 insert_paystub(data)                    # ← save to SQLite
                 processed_ids.add(msg['id'])
             except Exception as e:
-                logger.error(f"❌ Skipping paystub {i+1}: {e}")
+                logger.error(f"❌ Skipping paystub {i+1}: {e}", exc_info=True)
         else:
             logger.warning(f"❌ No PDF found in email {i+1}")
 

@@ -35,7 +35,11 @@ def extract_data_with_claude(text: str) -> dict:
         )
         raw = response.content[0].text
         clean = raw.replace("```json", "").replace("```", "").strip()
-        data = json.loads(clean)
+        try:
+            data = json.loads(clean)
+        except json.JSONDecodeError as e:
+            logger.error(f"❌ Claude returned invalid JSON: {e} — raw response (first 200 chars): {raw[:200]!r}")
+            raise ValueError(f"Claude response could not be parsed as JSON: {e}") from e
 
         # ── Pydantic validation ────────────────────────────────────────────────
         paystub = PaystubData(**data)
@@ -44,6 +48,8 @@ def extract_data_with_claude(text: str) -> dict:
         logger.info(f"✅ Data extracted — {paystub.company} — {paystub.pay_period_start}")
         return paystub.model_dump()
 
+    except ValueError:
+        raise
     except Exception as e:
-        logger.error(f"❌ Claude extraction failed: {e}")
+        logger.error(f"❌ Claude extraction failed: {e}", exc_info=True)
         raise

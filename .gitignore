@@ -22,7 +22,7 @@ __pycache__/
 processed_ids.json
 
 #SqLite database
-paystubs.db
+*.db
 
 #Logs
 process.log
