@@ -205,6 +205,6 @@ paystub-analyzer/
 
 ## 👨‍💻 Author
 
-**Moises Vivas** — IT graduate and self-taught developer | Python · Data Analytics · AI integrations
+**Moises Vivas** — Operations professional building data tools and web applications with Python and AI-assisted development · Toronto, Canada
 
 - GitHub: [github.com/moisesvivass](https://github.com/moisesvivass)
