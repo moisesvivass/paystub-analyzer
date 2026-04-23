@@ -205,6 +205,7 @@ paystub-analyzer/
 
 ## 👨‍💻 Author
 
-**Moises Vivas** — Operations professional building data tools and web applications with Python and AI-assisted development · Toronto, Canada
+**Moises Vivas** — AI Application Developer · Python · Claude API · Gmail API · Docker · Toronto, Canada
 
 - GitHub: [github.com/moisesvivass](https://github.com/moisesvivass)
+- LinkedIn: [linkedin.com/in/moisesvivas](https://linkedin.com/in/moisesvivas)
