@@ -17,7 +17,8 @@ from pathlib import Path
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from paystub_analyzer.config import (
-    SCHEDULE_HOUR, SCHEDULE_MINUTE, SCHEDULE_TIMEZONE, SCHEDULE_MAX_EMAILS,
+    SCHEDULE_DAY_OF_WEEK, SCHEDULE_HOUR, SCHEDULE_MINUTE,
+    SCHEDULE_TIMEZONE, SCHEDULE_MAX_EMAILS,
 )
 from paystub_analyzer.database import start_run, finish_run, fail_run
 from paystub_analyzer.logger import get_logger
@@ -73,6 +74,7 @@ def start_scheduler() -> BackgroundScheduler:
     scheduler.add_job(
         _scheduled_job,
         trigger=CronTrigger(
+            day_of_week=SCHEDULE_DAY_OF_WEEK,
             hour=SCHEDULE_HOUR,
             minute=SCHEDULE_MINUTE,
             timezone=SCHEDULE_TIMEZONE,
@@ -83,8 +85,9 @@ def start_scheduler() -> BackgroundScheduler:
     )
     scheduler.start()
     logger.info(
-        f"Scheduler started — runs daily at {SCHEDULE_HOUR:02d}:{SCHEDULE_MINUTE:02d} "
-        f"({SCHEDULE_TIMEZONE}), max {SCHEDULE_MAX_EMAILS} emails/run"
+        f"Scheduler started — runs every {SCHEDULE_DAY_OF_WEEK} at "
+        f"{SCHEDULE_HOUR:02d}:{SCHEDULE_MINUTE:02d} ({SCHEDULE_TIMEZONE}), "
+        f"max {SCHEDULE_MAX_EMAILS} emails/run"
     )
     return scheduler
 
