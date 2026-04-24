@@ -1,27 +1,46 @@
+"""
+Email tracking backed by SQLite (processed_emails table).
+Keeps a thin JSON fallback for migration of legacy processed_ids.json.
+"""
 import json
 import os
+from paystub_analyzer.database import get_all_processed_email_ids, mark_email_processed
 from paystub_analyzer.logger import get_logger
 
 logger = get_logger(__name__)
 
-TRACKER_FILE = "processed_ids.json"
+_LEGACY_FILE = "processed_ids.json"
+_migration_done = False
 
-def load_processed_ids():
-    """Lee los IDs ya procesados del archivo JSON."""
-    if not os.path.exists(TRACKER_FILE):
-        return set()
-    with open(TRACKER_FILE, 'r') as f:
-        data = json.load(f)
-    return set(data)
 
-def save_processed_ids(ids: set):
-    """Guarda los IDs procesados en el archivo JSON."""
-    with open(TRACKER_FILE, 'w') as f:
-        json.dump(list(ids), f, indent=2)
-    logger.info(f"💾 Saved {len(ids)} processed IDs to {TRACKER_FILE}")
+def _migrate_legacy_tracker() -> None:
+    """One-time import of processed_ids.json into the DB."""
+    global _migration_done
+    if _migration_done or not os.path.exists(_LEGACY_FILE):
+        _migration_done = True
+        return
+    with open(_LEGACY_FILE) as f:
+        ids: list[str] = json.load(f)
+    for email_id in ids:
+        mark_email_processed(email_id)
+    os.rename(_LEGACY_FILE, _LEGACY_FILE + ".migrated")
+    _migration_done = True
+    logger.info(f"Migrated {len(ids)} IDs from legacy tracker to DB")
 
-def filter_new_messages(messages, processed_ids):
-    """Filtra solo los emails que no han sido procesados."""
-    new = [m for m in messages if m['id'] not in processed_ids]
-    logger.info(f"📬 {len(new)} new emails out of {len(messages)} total")
+
+def load_processed_ids() -> set[str]:
+    """Return all processed email IDs from the DB."""
+    _migrate_legacy_tracker()
+    return get_all_processed_email_ids()
+
+
+def filter_new_messages(messages: list[dict], processed_ids: set[str]) -> list[dict]:
+    """Return only messages whose ID is not yet processed."""
+    new = [m for m in messages if m["id"] not in processed_ids]
+    logger.info(f"{len(new)} new emails out of {len(messages)} total")
     return new
+
+
+def mark_processed(email_id: str) -> None:
+    """Persist a processed email ID to the DB."""
+    mark_email_processed(email_id)

@@ -3,6 +3,10 @@
 token.json
 client_secret*.json
 
+# Claude Code
+CLAUDE.md
+.claude/
+
 # Excel files with real data
 *.xlsx
 !demo/paystubs_DEMO.xlsx
@@ -14,15 +18,26 @@ client_secret*.json
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+env/
 
 # VS Code
 .vscode/
 
-# Processed Ids
+# DB state & runtime files
 processed_ids.json
-
-#SqLite database
 *.db
-
-#Logs
+*.lock
 process.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs
+*.docx

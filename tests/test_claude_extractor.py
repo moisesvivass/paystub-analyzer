@@ -1,3 +1,4 @@
+import pytest
 from unittest.mock import MagicMock, patch
 from paystub_analyzer.claude_extractor import extract_data_with_claude
 
@@ -15,7 +16,8 @@ FAKE_RESPONSE = """{
     "hours_worked": 40
 }"""
 
-@patch("paystub_analyzer.claude_extractor.anthropic_client")
+
+@patch("paystub_analyzer.claude_extractor._client")
 def test_extract_data_success(mock_client):
     """Should extract and validate data without calling the real API."""
     mock_message = MagicMock()
@@ -28,13 +30,13 @@ def test_extract_data_success(mock_client):
     assert result["gross_pay"] == 2000.00
     assert result["net_pay"] == 1500.00
 
-@patch("paystub_analyzer.claude_extractor.anthropic_client")
+
+@patch("paystub_analyzer.claude_extractor._client")
 def test_extract_data_invalid_json(mock_client):
-    """Should raise an exception if Claude returns invalid JSON."""
+    """Should raise ValueError if Claude returns invalid JSON."""
     mock_message = MagicMock()
     mock_message.content[0].text = "this is not json"
     mock_client.messages.create.return_value = mock_message
 
-    import pytest
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         extract_data_with_claude("fake paystub text")

@@ -1,55 +1,72 @@
 import json
-from anthropic import Anthropic
+import time
+import anthropic
+from anthropic import APIStatusError, APIConnectionError, APITimeoutError
 from paystub_analyzer.models import PaystubData
 from paystub_analyzer.logger import get_logger
 
 logger = get_logger(__name__)
 
-anthropic_client = Anthropic()
+_client = anthropic.Anthropic()
+_MODEL = "claude-haiku-4-5-20251001"
+_MAX_RETRIES = 3
+_RETRY_DELAY = 2.0
+
 
 def extract_data_with_claude(text: str) -> dict:
-    try:
-        response = anthropic_client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1000,
-            messages=[{
-                "role": "user",
-                "content": f"""Extract the following data from this paystub and return ONLY a JSON object:
-                - pay_period_start (YYYY-MM-DD)
-                - pay_period_end (YYYY-MM-DD)
-                - gross_pay (number)
-                - net_pay (number)
-                - federal_tax (number)
-                - provincial_tax (number)
-                - cpp (number)
-                - ei (number)
-                - vacation_pay (number)
-                - hours_worked (number)
-                - company (text, extract the company name from the paystub)
+    """Extract structured payroll data from paystub text using Claude AI.
 
-                Paystub text:
-                {text}
+    Retries up to _MAX_RETRIES times on transient API errors.
+    Raises ValueError for JSON/validation failures (not retried).
+    """
+    last_error: Exception | None = None
 
-                Return ONLY valid JSON, no explanation."""
-            }]
-        )
-        raw = response.content[0].text
-        clean = raw.replace("```json", "").replace("```", "").strip()
+    for attempt in range(1, _MAX_RETRIES + 1):
         try:
-            data = json.loads(clean)
-        except json.JSONDecodeError as e:
-            logger.error(f"❌ Claude returned invalid JSON: {e} — raw response (first 200 chars): {raw[:200]!r}")
-            raise ValueError(f"Claude response could not be parsed as JSON: {e}") from e
+            response = _client.messages.create(
+                model=_MODEL,
+                max_tokens=1024,
+                messages=[{
+                    "role": "user",
+                    "content": (
+                        "Extract the following fields from this paystub and return ONLY a JSON object:\n"
+                        "- pay_period_start (YYYY-MM-DD)\n"
+                        "- pay_period_end (YYYY-MM-DD)\n"
+                        "- gross_pay (number)\n"
+                        "- net_pay (number)\n"
+                        "- federal_tax (number)\n"
+                        "- provincial_tax (number)\n"
+                        "- cpp (number)\n"
+                        "- ei (number)\n"
+                        "- vacation_pay (number)\n"
+                        "- hours_worked (number or null)\n"
+                        "- company (text)\n\n"
+                        f"Paystub:\n{text}\n\n"
+                        "Return ONLY valid JSON, no explanation."
+                    )
+                }]
+            )
+            raw: str = response.content[0].text
+            clean = raw.replace("```json", "").replace("```", "").strip()
 
-        # ── Pydantic validation ────────────────────────────────────────────────
-        paystub = PaystubData(**data)
-        paystub.validate_math()
+            try:
+                data = json.loads(clean)
+            except json.JSONDecodeError as e:
+                logger.error(f"Claude returned invalid JSON: {e} — raw (200 chars): {raw[:200]!r}")
+                raise ValueError(f"Claude response could not be parsed as JSON: {e}") from e
 
-        logger.info(f"✅ Data extracted — {paystub.company} — {paystub.pay_period_start}")
-        return paystub.model_dump()
+            paystub = PaystubData(**data)
+            paystub.validate_math()
+            logger.info(f"Data extracted — {paystub.company} — {paystub.pay_period_end}")
+            return paystub.model_dump()
 
-    except ValueError:
-        raise
-    except Exception as e:
-        logger.error(f"❌ Claude extraction failed: {e}", exc_info=True)
-        raise
+        except (APIStatusError, APIConnectionError, APITimeoutError) as e:
+            last_error = e
+            logger.warning(f"Claude API error (attempt {attempt}/{_MAX_RETRIES}): {e}")
+            if attempt < _MAX_RETRIES:
+                time.sleep(_RETRY_DELAY * (2 ** (attempt - 1)))
+
+        except (ValueError, anthropic.BadRequestError):
+            raise
+
+    raise RuntimeError(f"Claude API failed after {_MAX_RETRIES} attempts") from last_error
