@@ -6,7 +6,7 @@
 
 **What this solves:** An automated pipeline that answers: How much did I earn this year? Are my deductions correct? How do my earnings compare across employers?
 
-Automated ETL pipeline that connects to Gmail, downloads encrypted PDF paystubs, extracts structured payroll data using Claude AI, stores it in a SQLite database, and generates a professional 7-sheet Excel report.
+Connects to Gmail, downloads encrypted PDF paystubs, extracts structured payroll data using Claude AI, stores everything in SQLite, and generates a professional multi-sheet Excel report — automatically, every Thursday at 6:30 AM.
 
 ## 📸 Screenshots
 
@@ -21,44 +21,50 @@ Automated ETL pipeline that connects to Gmail, downloads encrypted PDF paystubs,
 
 ## 🚀 What it does
 
-- Connects to Gmail via Google API and finds paystub emails from any company
-- Downloads and decrypts password-protected PDF paystubs
-- Uses Claude AI (Anthropic) to extract structured payroll data
-- Validates extracted data with Pydantic schema enforcement
-- Performs math validation (Gross Pay − Deductions = Net Pay)
-- Tracks processed emails to avoid duplicate processing
-- Stores all data in a SQLite database for SQL querying
-- Generates a professional Excel report with 7 sheets
+- Connects to Gmail via Google API and finds paystub emails using a configurable search query
+- Downloads and decrypts AES-256 password-protected PDF paystubs
+- Uses Claude AI (Haiku) to extract structured payroll data from raw PDF text
+- Validates extracted data with Pydantic — formula injection prevention, numeric parsing, math check
+- Tracks processed emails in SQLite to avoid duplicate processing across runs
+- Stores all paystub data in a local SQLite database
+- Generates a professional 9-sheet Excel report with year-by-year personal summaries
+- Runs on a weekly schedule (every Thursday at 6:30 AM) using APScheduler
 
-## 📊 Excel Report (7 Sheets)
+## 📊 Excel Report (9 Sheets)
 
 | Sheet | Description |
 |-------|-------------|
-| 🏠 Dashboard | Key metrics and totals at a glance |
-| 📋 Raw Data | Full earnings history, one row per pay period |
-| 📊 Annual Summary | Totals by year |
-| 📅 Monthly Summary | Earnings over time |
+| ⭐ 2026 Personal | YTD summary cards + full paystub detail for 2026 |
+| 📅 2025 Personal | Full earnings breakdown for 2025 |
+| 🏠 Dashboard | Lifetime totals and averages at a glance |
+| 📋 Raw Data | Complete history — one row per pay period |
+| 📊 Annual Summary | Totals aggregated by year |
+| 📅 Monthly Summary | Earnings over time with net rate % |
 | 🏢 By Company | Comparison across employers |
-| 💰 Deductions | Tax, CPP, EI breakdown |
+| 💰 Deductions | Federal tax, provincial tax, CPP, EI breakdown |
 | 📖 Glossary | Canadian paystub terms explained |
 
-> 📥 Download a sample report with anonymized data: [demo/paystubs_DEMO.xlsx](demo/paystubs_DEMO.xlsx)
+Each personal summary sheet includes: Pay Periods, Gross Pay, Net Pay, Income Tax, CPP, EI, Avg Net/Period, Net Rate %, plus a sortable paystub detail table with Vacation Pay and Hours Worked.
+
+> 📥 Sample report with anonymized data: [demo/paystubs_DEMO.xlsx](demo/paystubs_DEMO.xlsx)
 
 ## 🛠️ Tech Stack
 
-- **Python 3** — core language
-- **Gmail API** — email and PDF retrieval
-- **Claude AI (Anthropic)** — intelligent data extraction
-- **Pydantic** — data validation and schema enforcement
-- **PyPDF2** — PDF decryption and text extraction
-- **SQLite** — local database storage
-- **OpenPyXL** — Excel report generation
-- **pytest** — automated testing with mocks
-- **Docker** — containerization
-- **GitHub Actions** — CI/CD pipeline
-- **python-dotenv** — environment variable management
+| Layer | Technology |
+|-------|-----------|
+| Language | Python 3 |
+| AI Extraction | Claude Haiku (claude-haiku-4-5-20251001) via Anthropic API |
+| Email | Gmail API (OAuth 2.0, read-only) |
+| PDF | PyPDF2 + pycryptodome (AES-256 decryption) |
+| Validation | Pydantic v2 |
+| Database | SQLite |
+| Excel | OpenPyXL |
+| Scheduler | APScheduler (CronTrigger) |
+| Testing | pytest + pytest-cov |
+| CI/CD | GitHub Actions |
+| Config | python-dotenv |
 
-## ⚙️ Setup Instructions
+## ⚙️ Setup
 
 ### 1. Clone the repository
 ```bash
@@ -66,146 +72,185 @@ git clone https://github.com/moisesvivass/paystub-analyzer.git
 cd paystub-analyzer
 ```
 
-### 2. Create and activate virtual environment
+### 2. Create virtual environment
 ```bash
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-source .venv/bin/activate     # Mac/Linux
+# Recommended: create outside OneDrive to avoid cloud-sync issues on Windows
+python -m venv C:/venvs/paystub-analyzer
+C:/venvs/paystub-analyzer/Scripts/activate    # Windows
+source C:/venvs/paystub-analyzer/bin/activate  # Mac/Linux
 ```
 
 ### 3. Install dependencies
 ```bash
 pip install -r requirements.txt
+pip install -r requirements-dev.txt  # only needed to run tests
 ```
 
 ### 4. Set up Google Cloud
-- Go to [console.cloud.google.com](https://console.cloud.google.com)
-- Create a new project
-- Enable the Gmail API
-- Create OAuth 2.0 credentials (Desktop app)
-- Download the credentials JSON file
+1. Go to [console.cloud.google.com](https://console.cloud.google.com)
+2. Create a new project and enable the **Gmail API**
+3. Create **OAuth 2.0 credentials** (Desktop app type)
+4. Download the credentials JSON file
 
 ### 5. Create your `.env` file
-```
+```env
 ANTHROPIC_API_KEY=your_anthropic_api_key
 PDF_PASSWORD=your_pdf_password
-CREDENTIALS_FILE=path/to/your/client_secret.json
-OUTPUT_EXCEL=path/to/output/paystubs.xlsx
+CREDENTIALS_FILE=client_secret.json
+OUTPUT_EXCEL=paystubs.xlsx
+DB_FILE=paystubs.db
+LOG_FILE=process.log
 EMAIL_QUERY=subject:"Pay Stub" OR subject:"Paystub" OR subject:"payslip"
+
+# Scheduler (default: every Thursday at 6:30 AM Toronto time)
+SCHEDULE_DAY_OF_WEEK=thu
+SCHEDULE_HOUR=6
+SCHEDULE_MINUTE=30
+SCHEDULE_TIMEZONE=America/Toronto
+SCHEDULE_MAX_EMAILS=10
 ```
 
-### 6. Run the program
+### 6. Authenticate Gmail (first run only)
 ```bash
-# Process all emails (recommended limit for testing)
-python main.py --mode full --limit 5
+python main.py --mode update --limit 1
+```
+A browser window will open. Sign in with your Google account and grant read-only Gmail access. A `token.json` file is saved locally for future runs.
 
-# Process all emails — no limit
-python main.py --mode full --limit 100
-
-# Only process new emails since last run
+### 7. Run the pipeline
+```bash
+# Process new emails only (recommended for regular use)
 python main.py --mode update
-```
 
-## 🐳 Run with Docker
-```bash
-docker build -t paystub-analyzer .
-docker run paystub-analyzer
+# Process all emails with a limit
+python main.py --mode update --limit 50
+
+# Start the weekly scheduler (runs every Thursday at 6:30 AM)
+python main.py --schedule
 ```
 
 ## 💻 CLI Reference
 
-| Command | Description |
-|---------|-------------|
-| `--mode full` | Process all emails |
-| `--mode update` | Only new emails since last run |
-| `--limit N` | Max number of emails to process |
+| Flag | Description |
+|------|-------------|
+| `--mode update` | Only process emails not yet in the database |
+| `--mode full` | Re-evaluate all emails (respects deduplication) |
+| `--limit N` | Cap the number of emails fetched from Gmail |
+| `--schedule` | Start the APScheduler weekly background job |
+
+## 📅 Scheduler
+
+When started with `--schedule`, the pipeline runs automatically every **Thursday at 6:30 AM** (configurable via `.env`). Features:
+
+- **Cross-platform lock** — prevents two instances from running simultaneously
+- **Run history** — every scheduled run is logged in the `run_history` DB table with start time, finish time, emails processed, and any errors
+- **Misfire tolerance** — if the machine is off at 6:30 AM, the job fires within 1 hour of coming back online
+
+```bash
+python main.py --schedule
+```
 
 ## 🗄️ Database
 
-All paystubs are stored in a local SQLite database (`paystubs.db`). You can query it directly:
+All data is stored in `paystubs.db` (SQLite). Three tables:
+
+**`paystubs`** — one row per pay period  
+**`processed_emails`** — tracks which Gmail message IDs have been handled  
+**`run_history`** — log of every scheduled pipeline run
 
 ```sql
 -- Total earnings by year
-SELECT strftime('%Y', pay_period_start) as year,
-       SUM(gross_pay) as total_gross,
-       SUM(net_pay) as total_net
+SELECT strftime('%Y', pay_period_end) AS year,
+       COUNT(*) AS periods,
+       SUM(gross_pay) AS total_gross,
+       SUM(net_pay) AS total_net
 FROM paystubs
 GROUP BY year;
 
 -- Earnings by company
-SELECT company, COUNT(*) as periods, SUM(gross_pay) as total
+SELECT company, COUNT(*) AS periods, SUM(gross_pay) AS total
 FROM paystubs
 GROUP BY company;
 ```
 
-## 🧪 Running Tests
-```bash
-pytest tests/ -v
-```
-
-Tests use mocks — no real API calls, no cost. ✅
-
-## 📁 Project Structure
-```
-paystub-analyzer/
-├── main.py                        # Entry point + CLI
-├── Dockerfile                     # Docker container config
-├── requirements.txt               # Dependencies
-├── .env                           # Environment variables (never committed)
-├── .gitignore                     # Files excluded from GitHub
-├── README.md                      # This file
-├── demo/
-│   └── paystubs_DEMO.xlsx         # Sample report with anonymized data
-├── docs/
-│   └── images/
-│       ├── dashboard.png          # Excel dashboard screenshot
-│       ├── terminal.png           # Terminal output screenshot
-│       └── ci.png                 # GitHub Actions screenshot
-├── .github/
-│   └── workflows/
-│       └── ci.yml                 # GitHub Actions CI/CD
-├── tests/
-│   ├── test_claude_extractor.py   # Mocked Claude AI tests
-│   ├── test_pdf_processor.py      # PDF processing tests
-│   └── test_tracker.py            # Tracker logic tests
-└── paystub_analyzer/
-    ├── gmail_client.py            # Gmail connection + PDF download
-    ├── pdf_processor.py           # PDF decryption + text extraction
-    ├── claude_extractor.py        # Claude AI data extraction
-    ├── models.py                  # Pydantic data models
-    ├── excel_report.py            # Excel report generation
-    ├── database.py                # SQLite database layer
-    ├── tracker.py                 # Processed email ID tracker
-    ├── config.py                  # Loads .env variables
-    └── logger.py                  # Logging setup
-```
-
 ## 🔒 Security
 
-- All credentials stored in `.env` (never committed to GitHub)
-- Gmail access is read-only
-- No personal data shared externally
-- Real Excel files and database excluded from GitHub
+- All secrets in `.env` — never committed to GitHub
+- Gmail access is **read-only** (no send, no delete)
+- Formula injection prevention on all text fields extracted from PDFs
+- `*.xlsx`, `*.db`, `token.json`, `client_secret.json` all excluded via `.gitignore`
+- Parameterized SQL queries throughout — no string interpolation
+
+## 🧪 Tests
+
+```bash
+pytest tests/ -v
+pytest tests/ --cov=paystub_analyzer --cov-report=term-missing
+```
+
+28 tests across 6 files. No real API calls — all external dependencies are mocked.
+
+| File | What it tests |
+|------|--------------|
+| `test_models.py` | Pydantic validation, formula injection, numeric parsing |
+| `test_database.py` | Insert, deduplication, run_history lifecycle |
+| `test_excel_report.py` | Dedup logic, sorting, file generation |
+| `test_tracker.py` | DB-backed email tracking |
+| `test_claude_extractor.py` | Retry logic, JSON parsing, API error handling |
+| `test_pdf_processor.py` | PDF decryption and text extraction |
+
+## 📁 Project Structure
+
+```
+paystub-analyzer/
+├── main.py                         # Entry point + CLI + run_pipeline()
+├── requirements.txt                # Runtime dependencies
+├── requirements-dev.txt            # Dev/test dependencies
+├── .env                            # Secrets (never committed)
+├── .gitignore
+├── README.md
+├── demo/
+│   └── paystubs_DEMO.xlsx          # Anonymized sample report
+├── docs/images/                    # Screenshots for README
+├── .github/workflows/ci.yml        # GitHub Actions CI
+├── tests/
+│   ├── test_claude_extractor.py
+│   ├── test_database.py
+│   ├── test_excel_report.py
+│   ├── test_models.py
+│   ├── test_pdf_processor.py
+│   └── test_tracker.py
+└── paystub_analyzer/
+    ├── config.py                   # Loads .env, validate_config()
+    ├── logger.py                   # RotatingFileHandler (10 MB × 5)
+    ├── models.py                   # Pydantic PaystubData model
+    ├── gmail_client.py             # Gmail OAuth + paginated search
+    ├── pdf_processor.py            # AES-256 PDF decrypt + text extract
+    ├── claude_extractor.py         # Claude AI extraction + retry
+    ├── database.py                 # SQLite layer (context manager)
+    ├── tracker.py                  # Processed email ID tracking
+    ├── excel_report.py             # 9-sheet Excel report builder
+    └── scheduler.py               # APScheduler weekly job
+```
 
 ## ✅ Roadmap
 
-- ✅ Modular architecture
-- ✅ CLI with `--mode` and `--limit`
-- ✅ Incremental processing — only new emails
-- ✅ Deduplication — never double-count
-- ✅ Pydantic validation + math check
-- ✅ SQLite database layer
-- ✅ Professional Excel report (7 sheets)
-- ✅ Generic support for any company
-- ✅ pytest test suite with mocks
-- ✅ Docker containerization
+- ✅ Modular architecture with clean separation of concerns
+- ✅ CLI with `--mode` and `--limit` flags
+- ✅ Incremental processing — only new emails per run
+- ✅ Deduplication — never double-counts a paystub
+- ✅ Pydantic validation + math consistency check
+- ✅ AES-256 PDF decryption (pycryptodome)
+- ✅ SQLite database with run history
+- ✅ 9-sheet Excel report with per-year personal summaries
+- ✅ Weekly APScheduler with cross-platform lock and run history
+- ✅ Rotating log file (10 MB × 5 backups)
+- ✅ 28 automated tests (pytest)
 - ✅ GitHub Actions CI/CD
-- ⬜ Web dashboard — view analytics in browser
-- ⬜ Scheduled automation — run automatically every month
+- ⬜ Web dashboard — view analytics in browser (FastAPI + React)
 
 ## 👨‍💻 Author
 
-**Moises Vivas** — AI Application Developer · Python · Claude API · Gmail API · Docker · Toronto, Canada
+**Moises Vivas** — Full Stack Developer · Python · React · Claude API · Toronto, Canada
 
 - GitHub: [github.com/moisesvivass](https://github.com/moisesvivass)
 - LinkedIn: [linkedin.com/in/moisesvivas](https://linkedin.com/in/moisesvivas)
