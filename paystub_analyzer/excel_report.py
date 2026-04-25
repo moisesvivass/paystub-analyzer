@@ -359,38 +359,37 @@ def _build_glossary(wb: openpyxl.Workbook) -> None:
     _set_col_widths(ws, {"A": 16, "B": 30, "C": 50, "D": 22})
 
 
-# ── Sheet 8: 2026 Personal Summary ────────────────────────────────────────────
-def _build_2026_personal(wb: openpyxl.Workbook, rows: list[list]) -> None:
-    rows_2026 = [r for r in rows if str(r[1] or "").startswith("2026")]
+# ── Year Personal Summary (reusable) ──────────────────────────────────────────
+def _build_year_personal(wb: openpyxl.Workbook, rows: list[list], year: str, icon: str) -> None:
+    year_rows = [r for r in rows if str(r[1] or "").startswith(year)]
 
-    ws = wb.create_sheet("⭐ 2026 Personal")
+    ws = wb.create_sheet(f"{icon} {year} Personal")
     ws.merge_cells("A1:G1")
     ws.row_dimensions[1].height = 40
-    _title_cell(ws, "A1", "⭐  2026 — PERSONAL EARNINGS SUMMARY", size=14)
+    _title_cell(ws, "A1", f"{icon}  {year} — PERSONAL EARNINGS SUMMARY", size=14)
 
-    if not rows_2026:
-        ws["A3"].value = "No paystubs found for 2026 yet."
+    if not year_rows:
+        ws["A3"].value = f"No paystubs found for {year} yet."
         ws["A3"].font = Font(name="Arial", size=11, italic=True)
         return
 
-    # ── Summary cards ──────────────────────────────────────────────────────────
-    total_gross = sum(float(r[3] or 0) for r in rows_2026)
-    total_net   = sum(float(r[4] or 0) for r in rows_2026)
-    total_tax   = sum(float(r[5] or 0) + float(r[6] or 0) for r in rows_2026)
-    total_cpp   = sum(float(r[7] or 0) for r in rows_2026)
-    total_ei    = sum(float(r[8] or 0) for r in rows_2026)
-    periods     = len(rows_2026)
+    total_gross = sum(float(r[3] or 0) for r in year_rows)
+    total_net   = sum(float(r[4] or 0) for r in year_rows)
+    total_tax   = sum(float(r[5] or 0) + float(r[6] or 0) for r in year_rows)
+    total_cpp   = sum(float(r[7] or 0) for r in year_rows)
+    total_ei    = sum(float(r[8] or 0) for r in year_rows)
+    periods     = len(year_rows)
     ytd_rate    = round((total_net / total_gross * 100), 1) if total_gross else 0
 
     summary = [
-        ("Pay Periods (YTD)",    periods,                                   None),
-        ("Gross Pay (YTD)",      total_gross,                               "$#,##0.00"),
-        ("Net Pay (YTD)",        total_net,                                 "$#,##0.00"),
-        ("Income Tax (YTD)",     total_tax,                                 "$#,##0.00"),
-        ("CPP (YTD)",            total_cpp,                                 "$#,##0.00"),
-        ("EI (YTD)",             total_ei,                                  "$#,##0.00"),
-        ("Avg Net / Period",     total_net / periods if periods else 0,     "$#,##0.00"),
-        ("Net Rate",             ytd_rate,                                  "0.0\"%\""),
+        ("Pay Periods",      periods,                                   None),
+        ("Gross Pay",        total_gross,                               "$#,##0.00"),
+        ("Net Pay",          total_net,                                 "$#,##0.00"),
+        ("Income Tax",       total_tax,                                 "$#,##0.00"),
+        ("CPP",              total_cpp,                                 "$#,##0.00"),
+        ("EI",               total_ei,                                  "$#,##0.00"),
+        ("Avg Net / Period", total_net / periods if periods else 0,     "$#,##0.00"),
+        ("Net Rate",         ytd_rate,                                  "0.0\"%\""),
     ]
 
     ws.cell(row=3, column=1).value = "METRIC"
@@ -413,24 +412,21 @@ def _build_2026_personal(wb: openpyxl.Workbook, rows: list[list]) -> None:
         if fmt:
             vc.number_format = fmt
 
-    # ── Paystub detail table ───────────────────────────────────────────────────
     detail_row = 4 + len(summary) + 2
     ws.merge_cells(f"A{detail_row}:G{detail_row}")
     _title_cell(ws, f"A{detail_row}", "PAYSTUB DETAIL", size=11)
 
-    headers = ["Pay Period End", "Gross Pay", "Net Pay", "Federal Tax",
-               "Provincial Tax", "CPP", "EI"]
-    for c, h in enumerate(headers, 1):
+    for c, h in enumerate(["Pay Period End", "Gross Pay", "Net Pay", "Federal Tax",
+                            "Provincial Tax", "CPP", "EI"], 1):
         _header_cell(ws.cell(row=detail_row + 1, column=c), h)
 
-    for i, row in enumerate(sorted(rows_2026, key=lambda x: x[2] or ""), detail_row + 2):
+    for i, row in enumerate(sorted(year_rows, key=lambda x: x[2] or ""), detail_row + 2):
         bg = LIGHT_GRAY if i % 2 == 0 else WHITE
         _data_cell(ws.cell(row=i, column=1), row[2], bg=bg)
         for c, idx in enumerate([3, 4, 5, 6, 7, 8], 2):
             _data_cell(ws.cell(row=i, column=c), row[idx], fmt="$#,##0.00", bg=bg)
 
-    # Totals row
-    tr = detail_row + 2 + len(rows_2026)
+    tr = detail_row + 2 + len(year_rows)
     _data_cell(ws.cell(row=tr, column=1), "TOTAL", bold=True, bg=LIGHT_GREEN)
     for c in range(2, 8):
         col = get_column_letter(c)
@@ -444,14 +440,15 @@ def _build_2026_personal(wb: openpyxl.Workbook, rows: list[list]) -> None:
 
 # ── Public API ─────────────────────────────────────────────────────────────────
 def create_excel(data_list: list[dict]) -> None:
-    """Build the full 8-sheet Excel workbook from paystub data."""
+    """Build the full Excel workbook from paystub data."""
     existing = load_existing_data()
     all_rows = deduplicate(existing, data_list)
 
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
 
-    _build_2026_personal(wb, all_rows)
+    _build_year_personal(wb, all_rows, "2026", "⭐")
+    _build_year_personal(wb, all_rows, "2025", "📅")
     _build_dashboard(wb, all_rows)
     _build_raw_data(wb, all_rows)
     _build_annual_summary(wb, all_rows)
