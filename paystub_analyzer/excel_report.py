@@ -441,6 +441,16 @@ def _build_year_personal(wb: openpyxl.Workbook, rows: list[list], year: str, ico
     ws.freeze_panes = f"A{detail_row + 2}"
 
 
+# Icons cycle for year sheets: most recent year gets ⭐, rest get calendar icons
+_YEAR_ICONS = ["⭐", "📅", "📆", "🗓️", "📊", "📋"]
+
+
+def _detect_years(rows: list[list]) -> list[str]:
+    """Return sorted list of years present in the data, newest first."""
+    years = sorted({str(r[1])[:4] for r in rows if r[1] and str(r[1])[:4].isdigit()}, reverse=True)
+    return years
+
+
 # ── Public API ─────────────────────────────────────────────────────────────────
 def create_excel(data_list: list[dict]) -> None:
     """Build the full Excel workbook from paystub data."""
@@ -450,8 +460,10 @@ def create_excel(data_list: list[dict]) -> None:
     wb = openpyxl.Workbook()
     wb.remove(wb.active)
 
-    _build_year_personal(wb, all_rows, "2026", "⭐")
-    _build_year_personal(wb, all_rows, "2025", "📅")
+    for i, year in enumerate(_detect_years(all_rows)):
+        icon = _YEAR_ICONS[i] if i < len(_YEAR_ICONS) else "📌"
+        _build_year_personal(wb, all_rows, year, icon)
+
     _build_dashboard(wb, all_rows)
     _build_raw_data(wb, all_rows)
     _build_annual_summary(wb, all_rows)
@@ -461,4 +473,4 @@ def create_excel(data_list: list[dict]) -> None:
     _build_glossary(wb)
 
     wb.save(OUTPUT_EXCEL)
-    logger.info(f"Excel saved: {OUTPUT_EXCEL}")
+    logger.info(f"Excel saved: {OUTPUT_EXCEL} — {len(_detect_years(all_rows))} year sheets")
