@@ -6,18 +6,9 @@
 
 **What this solves:** An automated pipeline that answers: How much did I earn this year? Are my deductions correct? How do my earnings compare across employers?
 
-Connects to Gmail, downloads encrypted PDF paystubs, extracts structured payroll data using Claude AI, stores everything in SQLite, and generates a professional multi-sheet Excel report — automatically, every Thursday at 6:30 AM.
+Connects to Gmail, downloads encrypted PDF paystubs, extracts structured payroll data using Claude AI, stores everything in SQLite, and generates a professional multi-sheet Excel report, automatically, every Thursday at 6:30 AM. Already running in production with 120+ real paystubs across multiple years and employers.
 
-## 📸 Screenshots
-
-### 🏠 Excel Dashboard
-![Dashboard](docs/images/dashboard.png)
-
-### ⚙️ Terminal Output
-![Terminal](docs/images/terminal.png)
-
-### ✅ CI/CD Pipeline
-![CI Pipeline](docs/images/ci.png)
+> 📥 Try it with anonymized data: [demo/paystubs_DEMO.xlsx](demo/paystubs_DEMO.xlsx)
 
 ## 🚀 What it does
 
@@ -48,8 +39,6 @@ The workbook generates **one personal sheet per year automatically** — no code
 | 📖 Glossary | Canadian paystub terms explained |
 
 Each personal year sheet includes: Pay Periods, Gross Pay, Net Pay, Income Tax, CPP, EI, Avg Net/Period, Net Rate %, Vacation Pay, Hours Worked, and a totals row.
-
-> 📥 Sample report with anonymized data: [demo/paystubs_DEMO.xlsx](demo/paystubs_DEMO.xlsx)
 
 ## 🛠️ Tech Stack
 
@@ -105,7 +94,7 @@ DB_FILE=paystubs.db
 LOG_FILE=process.log
 EMAIL_QUERY=subject:"Pay Stub" OR subject:"Paystub" OR subject:"payslip"
 
-# Scheduler (default: every Thursday at 6:30 AM Toronto time)
+# Scheduler (default: every Thursday at 6:30 AM — change TIMEZONE to match your location)
 SCHEDULE_DAY_OF_WEEK=thu
 SCHEDULE_HOUR=6
 SCHEDULE_MINUTE=30
@@ -142,15 +131,18 @@ python main.py --schedule
 
 ## 📅 Scheduler
 
-When started with `--schedule`, the pipeline runs automatically every **Thursday at 6:30 AM** (configurable via `.env`). Features:
-
-- **Cross-platform lock** — prevents two instances from running simultaneously
-- **Run history** — every scheduled run is logged in the `run_history` DB table with start time, finish time, emails processed, and any errors
-- **Misfire tolerance** — if the machine is off at 6:30 AM, the job fires within 1 hour of coming back online
+When started with `--schedule`, the pipeline runs automatically every **Thursday at 6:30 AM** (configurable via `.env`). Run this once and leave the terminal open:
 
 ```bash
 python main.py --schedule
 ```
+
+Features:
+
+- **Cross-platform lock** prevents two instances from running simultaneously
+- **Run history** logs every scheduled run in the `run_history` DB table with start time, finish time, emails processed, and any errors
+- **Misfire tolerance** if the machine is off at 6:30 AM, the job fires within 1 hour of coming back online
+- **Timezone** defaults to `America/Toronto`, change `SCHEDULE_TIMEZONE` in `.env` to match your location
 
 ## 🗄️ Database
 
