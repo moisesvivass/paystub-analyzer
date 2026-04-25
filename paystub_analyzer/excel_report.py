@@ -413,11 +413,11 @@ def _build_year_personal(wb: openpyxl.Workbook, rows: list[list], year: str, ico
             vc.number_format = fmt
 
     detail_row = 4 + len(summary) + 2
-    ws.merge_cells(f"A{detail_row}:G{detail_row}")
+    ws.merge_cells(f"A{detail_row}:I{detail_row}")
     _title_cell(ws, f"A{detail_row}", "PAYSTUB DETAIL", size=11)
 
     for c, h in enumerate(["Pay Period End", "Gross Pay", "Net Pay", "Federal Tax",
-                            "Provincial Tax", "CPP", "EI"], 1):
+                            "Provincial Tax", "CPP", "EI", "Vacation Pay", "Hours Worked"], 1):
         _header_cell(ws.cell(row=detail_row + 1, column=c), h)
 
     for i, row in enumerate(sorted(year_rows, key=lambda x: x[2] or ""), detail_row + 2):
@@ -425,16 +425,19 @@ def _build_year_personal(wb: openpyxl.Workbook, rows: list[list], year: str, ico
         _data_cell(ws.cell(row=i, column=1), row[2], bg=bg)
         for c, idx in enumerate([3, 4, 5, 6, 7, 8], 2):
             _data_cell(ws.cell(row=i, column=c), row[idx], fmt="$#,##0.00", bg=bg)
+        _data_cell(ws.cell(row=i, column=8), row[9], fmt="$#,##0.00", bg=bg)
+        _data_cell(ws.cell(row=i, column=9), row[10], bg=bg)
 
     tr = detail_row + 2 + len(year_rows)
     _data_cell(ws.cell(row=tr, column=1), "TOTAL", bold=True, bg=LIGHT_GREEN)
-    for c in range(2, 8):
+    for c in range(2, 9):
         col = get_column_letter(c)
         _data_cell(ws.cell(row=tr, column=c),
                    f"=SUM({col}{detail_row + 2}:{col}{tr - 1})",
                    fmt="$#,##0.00", bold=True, bg=LIGHT_GREEN)
+    _data_cell(ws.cell(row=tr, column=9), "", bg=LIGHT_GREEN)
 
-    _set_col_widths(ws, {"A": 18, "B": 14, "C": 14, "D": 14, "E": 16, "F": 10, "G": 10})
+    _set_col_widths(ws, {"A": 18, "B": 14, "C": 14, "D": 14, "E": 16, "F": 10, "G": 10, "H": 14, "I": 14})
     ws.freeze_panes = f"A{detail_row + 2}"
 
 
