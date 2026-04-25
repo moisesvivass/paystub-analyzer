@@ -51,16 +51,14 @@ def test_deduplicate_sorts_by_pay_period_start():
 
 
 def test_create_excel_produces_file(tmp_path, monkeypatch):
-    monkeypatch.setenv("OUTPUT_EXCEL", str(tmp_path / "test_report.xlsx"))
-    import importlib
-    import paystub_analyzer.config as cfg
-    importlib.reload(cfg)
     import paystub_analyzer.excel_report as er
-    importlib.reload(er)
+
+    out = tmp_path / "test_report.xlsx"
+    monkeypatch.setattr(er, "OUTPUT_EXCEL", str(out))
+    monkeypatch.setattr(er, "load_existing_data", lambda: [])
 
     er.create_excel(SAMPLE_NEW)
 
-    out = tmp_path / "test_report.xlsx"
     assert out.exists()
     wb = openpyxl.load_workbook(str(out))
     assert "📋 Raw Data" in wb.sheetnames
