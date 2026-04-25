@@ -94,11 +94,11 @@ DB_FILE=paystubs.db
 LOG_FILE=process.log
 EMAIL_QUERY=subject:"Pay Stub" OR subject:"Paystub" OR subject:"payslip"
 
-# Scheduler (default: every Thursday at 6:30 AM — change TIMEZONE to match your location)
+# Scheduler (default: every Thursday at 6:30 AM in your local timezone, auto-detected)
 SCHEDULE_DAY_OF_WEEK=thu
 SCHEDULE_HOUR=6
 SCHEDULE_MINUTE=30
-SCHEDULE_TIMEZONE=America/Toronto
+# SCHEDULE_TIMEZONE=America/Toronto  # optional — omit to use system timezone
 SCHEDULE_MAX_EMAILS=10
 ```
 
@@ -142,7 +142,7 @@ Features:
 - **Cross-platform lock** prevents two instances from running simultaneously
 - **Run history** logs every scheduled run in the `run_history` DB table with start time, finish time, emails processed, and any errors
 - **Misfire tolerance** if the machine is off at 6:30 AM, the job fires within 1 hour of coming back online
-- **Timezone** defaults to `America/Toronto`, change `SCHEDULE_TIMEZONE` in `.env` to match your location
+- **Timezone** auto-detected from your system, no configuration needed. Override with `SCHEDULE_TIMEZONE` in `.env` if needed
 
 ## 🗄️ Database
 

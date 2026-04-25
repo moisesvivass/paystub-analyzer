@@ -11,11 +11,23 @@ EMAIL_QUERY: str = os.getenv("EMAIL_QUERY", "")
 DB_FILE: str = os.getenv("DB_FILE", "paystubs.db")
 LOG_FILE: str = os.getenv("LOG_FILE", "process.log")
 
-# Scheduler config (default: every Thursday at 6:30 AM Toronto time)
+
+def _detect_timezone() -> str:
+    """Return the system timezone if SCHEDULE_TIMEZONE is not set in .env."""
+    if tz := os.getenv("SCHEDULE_TIMEZONE"):
+        return tz
+    try:
+        from tzlocal import get_localzone
+        return str(get_localzone())
+    except Exception:
+        return "UTC"
+
+
+# Scheduler config (default: every Thursday at 6:30 AM in the system local timezone)
 SCHEDULE_DAY_OF_WEEK: str = os.getenv("SCHEDULE_DAY_OF_WEEK", "thu")
 SCHEDULE_HOUR: int = int(os.getenv("SCHEDULE_HOUR", "6"))
 SCHEDULE_MINUTE: int = int(os.getenv("SCHEDULE_MINUTE", "30"))
-SCHEDULE_TIMEZONE: str = os.getenv("SCHEDULE_TIMEZONE", "America/Toronto")
+SCHEDULE_TIMEZONE: str = _detect_timezone()
 SCHEDULE_MAX_EMAILS: int = int(os.getenv("SCHEDULE_MAX_EMAILS", "10"))
 
 SCOPES: list[str] = ["https://www.googleapis.com/auth/gmail.readonly"]
