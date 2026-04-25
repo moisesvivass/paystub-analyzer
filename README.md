@@ -30,21 +30,24 @@ Connects to Gmail, downloads encrypted PDF paystubs, extracts structured payroll
 - Generates a professional 9-sheet Excel report with year-by-year personal summaries
 - Runs on a weekly schedule (every Thursday at 6:30 AM) using APScheduler
 
-## 📊 Excel Report (9 Sheets)
+## 📊 Excel Report
+
+The workbook generates **one personal sheet per year automatically** — no code changes needed when a new year starts or when you change jobs.
 
 | Sheet | Description |
 |-------|-------------|
-| ⭐ 2026 Personal | YTD summary cards + full paystub detail for 2026 |
-| 📅 2025 Personal | Full earnings breakdown for 2025 |
+| ⭐ {current year} Personal | YTD summary cards + full paystub detail |
+| 📅 {previous year} Personal | Full earnings breakdown |
+| … one sheet per year in DB | Auto-generated, newest first |
 | 🏠 Dashboard | Lifetime totals and averages at a glance |
 | 📋 Raw Data | Complete history — one row per pay period |
 | 📊 Annual Summary | Totals aggregated by year |
 | 📅 Monthly Summary | Earnings over time with net rate % |
-| 🏢 By Company | Comparison across employers |
+| 🏢 By Company | Comparison across employers — works with multiple companies simultaneously |
 | 💰 Deductions | Federal tax, provincial tax, CPP, EI breakdown |
 | 📖 Glossary | Canadian paystub terms explained |
 
-Each personal summary sheet includes: Pay Periods, Gross Pay, Net Pay, Income Tax, CPP, EI, Avg Net/Period, Net Rate %, plus a sortable paystub detail table with Vacation Pay and Hours Worked.
+Each personal year sheet includes: Pay Periods, Gross Pay, Net Pay, Income Tax, CPP, EI, Avg Net/Period, Net Rate %, Vacation Pay, Hours Worked, and a totals row.
 
 > 📥 Sample report with anonymized data: [demo/paystubs_DEMO.xlsx](demo/paystubs_DEMO.xlsx)
 
@@ -241,7 +244,8 @@ paystub-analyzer/
 - ✅ Pydantic validation + math consistency check
 - ✅ AES-256 PDF decryption (pycryptodome)
 - ✅ SQLite database with run history
-- ✅ 9-sheet Excel report with per-year personal summaries
+- ✅ Dynamic Excel — one personal sheet per year, auto-generated, no code changes needed
+- ✅ Multi-employer support — works across job changes simultaneously
 - ✅ Weekly APScheduler with cross-platform lock and run history
 - ✅ Rotating log file (10 MB × 5 backups)
 - ✅ 28 automated tests (pytest)
