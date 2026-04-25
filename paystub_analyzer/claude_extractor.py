@@ -2,12 +2,13 @@ import json
 import time
 import anthropic
 from anthropic import APIStatusError, APIConnectionError, APITimeoutError
+from paystub_analyzer.config import ANTHROPIC_API_KEY
 from paystub_analyzer.models import PaystubData
 from paystub_analyzer.logger import get_logger
 
 logger = get_logger(__name__)
 
-_client = anthropic.Anthropic()
+_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 _MODEL = "claude-haiku-4-5-20251001"
 _MAX_RETRIES = 3
 _RETRY_DELAY = 2.0

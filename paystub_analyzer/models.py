@@ -43,9 +43,11 @@ class PaystubData(BaseModel):
     @classmethod
     def parse_numeric(cls, v: object) -> float:
         """Convert strings like '$2,134.90' to float if needed."""
+        if v is None:
+            return 0.0
         if isinstance(v, str):
             cleaned = v.replace("$", "").replace(",", "").strip()
-            return float(cleaned)
+            return float(cleaned) if cleaned else 0.0
         if isinstance(v, (int, float)):
             return float(v)
         raise ValueError(f"Cannot convert {v!r} to float")

@@ -1,8 +1,9 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
+ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
 CREDENTIALS_FILE: str = os.getenv("CREDENTIALS_FILE", "client_secret.json")
 PDF_PASSWORD: str = os.getenv("PDF_PASSWORD", "")
 OUTPUT_EXCEL: str = os.getenv("OUTPUT_EXCEL", "paystubs.xlsx")
